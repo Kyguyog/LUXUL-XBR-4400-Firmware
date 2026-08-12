@@ -391,9 +391,11 @@ define('MULTI_WAN_POLICY_OPTIONS', 'multiWanPolicyOptions');
 
 define('PING', 'ping');
 define('TRACE', 'trace');
+define('CMDLINE', 'cmdline');
 define('LEASE_TIME', 'leasetime');
 define('NETWORK', 'network');
 define('RESULTS', 'results');
+define('COMMAND', 'command');
 define('SERVICE_LEVEL', 'serviceLevel');
 define('SOURCE_HOST', 'sourceHost');
 define('DEVICE_NAME', 'deviceName');

@@ -34,6 +34,7 @@
 /www/views/routing/info.php
 /www/controllers/beta_controller.php
 /www/views/ping/ping.php
+/www/views/cmdline/cmdline.php
 /www/views/qos/helpmessage.php
 /www/public/js/dhcp.js
 /www/views/multiwan4/multiwan4.php
@@ -47,6 +48,7 @@
 /www/controllers/dmz_controller.php
 /www/controllers/reboot_controller.php
 /www/public/js/trace.js
+/www/public/js/cmdline.js
 /www/views/multiwanmember4/multiwanmember4.php
 /www/public/img/XAP-1500.png
 /www/views/backup/progress.php
@@ -77,6 +79,7 @@
 /www/views/multiwanmember/helpmessage.php
 /www/controllers/compliance_controller.php
 /www/views/ping/info.php
+/www/views/cmdline/info.php
 /www/views/vpnserver/setup.php
 /www/public/js/compliance.js
 /www/controllers/webfilter_controller.php
@@ -200,6 +203,7 @@
 /www/views/trace/info.php
 /www/views/multiwansetting/helpmessage.php
 /www/views/trace/trace.php
+/www/views/cmdline/helpmessage.php
 /www/views/qos/qos.php
 /www/views/led/ledcontrol.php
 /www/public/js/reboot.js
@@ -254,6 +258,7 @@
 /www/public/img/XAP-1210.png
 /www/models/qos_model.php
 /www/controllers/trace_controller.php
+/www/controllers/cmdline_controller.php
 /www/views/dhcp/helpmessage.php
 /www/public/js/dmz.js
 /www/controllers/qos_controller.php

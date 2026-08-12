@@ -75,6 +75,7 @@
                         <li><a id='admin_iperf' href="/iperf/display" title="Iperf">Iperf</a></li>
                         <li><a id='admin_ping' href="/ping/display" title="Ping">Ping</a></li>
                         <li><a id='admin_traceroute' href="/trace/display" title="Trace Route">Trace Route</a></li>
+                        <li><a id='admin_cmdline' href="/cmdline/display" title="Command Line">Command Line</a></li>
                     </ul>
                 </li>
 
@@ -154,6 +155,7 @@
                     <li><a id='admin_iperf' href="/iperf/display" title="Iperf">Iperf</a></li>
                     <li><a id='admin_ping' href="/ping/display" title="Ping">Ping</a></li>
                     <li><a id='admin_traceroute' href="/trace/display" title="Trace Route">Trace Route</a></li>
+                    <li><a id='admin_cmdline' href="/cmdline/display" title="Command Line">Command Line</a></li>
                 </ul>
             </li>
 
@@ -170,4 +172,3 @@
     </div>
 
 </aside>
-
