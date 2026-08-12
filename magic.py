@@ -4,87 +4,78 @@ import struct
 import zlib
 
 filename = "custom_XBR-4400.bin"
-kernel_header_file = "kernel_header.bin"
+lxl_filename = "custom_XBR-4400.lxl"
 
 if not os.path.exists(filename):
     print(f"[-] Error: '{filename}' not found.")
     exit(1)
 
-# 1. Pad file to 4-byte boundary (Required for MTD/TRX alignment)
-file_size = os.path.getsize(filename)
-padding = (4 - (file_size % 4)) % 4
-if padding > 0:
-    with open(filename, "ab") as f:
-        f.write(b"\x00" * padding)
-    file_size += padding
-    print(f"[+] Added {padding} bytes of padding.")
-
 trx_offset = 64
-
-# 2. Find exact SquashFS offset relative to the TRX header
-# SquashFS magic bytes in little-endian: hsqs -> 0x73717368 (b"hsqs")
-squashfs_magic = b"hsqs"
-rootfs_offset = None
+BLOCK_SIZE = 65536  # 64 KB Flash Block Boundary Alignment
 
 with open(filename, "rb") as f:
-    f.seek(trx_offset)
-    trx_data = f.read()
-    sqfs_pos = trx_data.find(squashfs_magic)
-    if sqfs_pos != -1:
-        rootfs_offset = sqfs_pos
-        print(f"[+] Found SquashFS magic 'hsqs' at TRX offset: {hex(rootfs_offset)} ({rootfs_offset} bytes)")
+    header_64 = f.read(trx_offset)
+    trx_payload = bytearray(f.read())
 
-# Fallback offset calculation if magic bytes aren't auto-detected
-if rootfs_offset is None:
-    if os.path.exists(kernel_header_file):
-        # kernel_header.bin ALREADY includes the 28-byte TRX header
-        rootfs_offset = os.path.getsize(kernel_header_file)
-        print(f"[+] Calculated RootFS offset from '{kernel_header_file}' size: {hex(rootfs_offset)} ({rootfs_offset} bytes)")
-    else:
-        rootfs_offset = 0x00107800
-        print(f"[!] Warning: Falling back to default stock RootFS offset: {hex(rootfs_offset)}")
+# Check HDR0 magic
+if trx_payload[:4] != b"HDR0":
+    print("[-] TRX Magic 'HDR0' not found at offset 64!")
+    exit(1)
 
-# 3. Update headers and checksums
-with open(filename, "r+b") as f:
-    f.seek(trx_offset)
-    if f.read(4) != b"HDR0":
-        print("[-] TRX Magic 'HDR0' not found at offset 64!")
-        exit(1)
+# 1. Pad TRX payload to 64 KB (65536 byte) boundary
+payload_len = len(trx_payload)
+pad_len = (BLOCK_SIZE - (payload_len % BLOCK_SIZE)) % BLOCK_SIZE
+if pad_len > 0:
+    trx_payload.extend(b"\x00" * pad_len)
+    print(
+        f"[+] Padded TRX payload by {pad_len} bytes to 64 KB boundary"
+        f" ({len(trx_payload)} bytes total)."
+    )
 
-    trx_len = file_size - trx_offset
+trx_len = len(trx_payload)
 
-    # Write updated TRX length (TRX + 4)
-    f.seek(trx_offset + 4)
-    f.write(struct.pack("<I", trx_len))
+# 2. Find exact SquashFS offset (Partition 2)
+squashfs_magic = b"hsqs"
+sqfs_pos = trx_payload.find(squashfs_magic)
 
-    # Write correct RootFS offset (Partition 2 / TRX + 24)
-    f.seek(trx_offset + 24)
-    f.write(struct.pack("<I", rootfs_offset))
+if sqfs_pos != -1:
+    rootfs_offset = sqfs_pos
+    print(
+        f"[+] Found SquashFS magic 'hsqs' at TRX offset: {hex(rootfs_offset)}"
+        f" ({rootfs_offset} bytes)"
+    )
+else:
+    rootfs_offset = 0x00107800
+    print(
+        "[!] Warning: 'hsqs' magic not found. Falling back to stock RootFS"
+        f" offset: {hex(rootfs_offset)}"
+    )
 
-    # Calculate & write TRX CRC32 (TRX + 8)
-    # CRC32 covers everything in TRX from offset 12 to the end of the file
-    f.seek(trx_offset + 12)
-    trx_payload = f.read()
-    crc = zlib.crc32(trx_payload) & 0xFFFFFFFF
+# 3. Update TRX Header Fields
+# Offset 4: TRX Length
+struct.pack_into("<I", trx_payload, 4, trx_len)
 
-    f.seek(trx_offset + 8)
-    f.write(struct.pack("<I", crc))
+# Offset 24: Partition 2 (RootFS) Offset
+struct.pack_into("<I", trx_payload, 24, rootfs_offset)
 
-    print(f"[+] TRX Header updated: Length={trx_len} bytes, RootFS Offset={hex(rootfs_offset)}, CRC32={hex(crc)}")
+# 4. Calculate TRX CRC32 (Covers offset 12 to end of padded payload)
+crc_data = bytes(trx_payload[12:])
+crc = zlib.crc32(crc_data) & 0xFFFFFFFF
+struct.pack_into("<I", trx_payload, 8, crc)
 
-    # --- 4. Update Outer Luxul MD5 Header ---
-    f.seek(64)
-    file_payload = f.read()
-    new_md5_hex = hashlib.md5(file_payload).hexdigest().encode("ascii")
+print(
+    f"[+] TRX Header updated: Length={trx_len} bytes, RootFS"
+    f" Offset={hex(rootfs_offset)}, CRC32={hex(crc)}"
+)
 
-    f.seek(0)
-    f.write(new_md5_hex)
+# 5. Calculate Outer Luxul MD5 ASCII Hash
+new_md5_hex = hashlib.md5(trx_payload).hexdigest().encode("ascii")
 
-    print(f"[+] Outer Luxul MD5 updated: {new_md5_hex.decode('ascii')}")
+# 6. Reconstruct final .lxl firmware binary
+# [32-byte MD5] + [32-byte Header Padding/Model Tag] + [TRX Payload]
+final_lxl_data = new_md5_hex + header_64[32:] + bytes(trx_payload)
 
-# Save output copy as custom_XBR-4400.lxl
-lxl_filename = "custom_XBR-4400.lxl"
-with open(filename, "rb") as src, open(lxl_filename, "wb") as dst:
-    dst.write(src.read())
+with open(lxl_filename, "wb") as f:
+    f.write(final_lxl_data)
 
-print(f"[+] Successfully generated '{lxl_filename}'.")
+print(f"[+] Successfully generated 64 KB aligned image: '{lxl_filename}'.")
