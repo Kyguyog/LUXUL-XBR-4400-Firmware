@@ -32,6 +32,11 @@ jobs:
           rm -rf squashfs-root/var/log/*
           rm -rf squashfs-root/var/run/*
 
+      - name: Fix SSH Permissions
+        run: |
+          chmod 700 squashfs-root/root/.ssh || true
+          chmod 600 squashfs-root/root/.ssh/authorized_keys || true
+
       - name: Build SquashFS RootFS
         run: |
           mksquashfs squashfs-root custom_rootfs.squashfs \
