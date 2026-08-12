@@ -1,0 +1,400 @@
+<script src='/js/form.js'></script>
+<script language="Javascript">
+$(function(){
+    $("input[type=text]").on("focus",function(focus_event){
+    	load_help_ajax($(this).attr("help"));
+    });
+    load_help_ajax('quickSetup_help');
+
+    $("#dhcp").change(function(){
+        if($(this).val()=="dhcp"){
+       		$("#ipOptionsDiv").slideUp("slow");
+        }else{
+        	$("#ipOptionsDiv").slideDown("slow");
+        } 
+    });
+
+    $("#operatingMode").change(function(){
+        if($(this).val()=="sta+1"){
+        	$("#lblNetworkName").html("Root AP Name (SSID)");
+        }else{
+        	$("#lblNetworkName").html("Network Name (SSID)");
+        }
+        
+    });
+
+    $("#operatingMode5").change(function(){
+        if($(this).val()=="sta+1"){
+        	$("#lblNetworkName5").html("Root AP Name (SSID)");
+        }else{
+        	$("#lblNetworkName5").html("Network Name (SSID)");
+        }
+        
+    });
+	$("#securityMode").change(function(){
+		if($(this).val()=="wep"){
+			$("#wepKeyDiv").slideDown("slow");
+		}else{
+			$("#wepKeyDiv").slideUp("slow");
+		}
+		
+		if($(this).val()=="psk" || $(this).val()=="psk2" || $(this).val()=="mixed-psk" ){
+			$("#wpaDiv").slideDown("slow");	
+		}else{
+			$("#wpaDiv").slideUp("slow");
+		}
+		
+	});
+
+	$("#securityMode5").change(function(){
+		if($(this).val()=="wep"){
+			$("#wepKey5Div").slideDown("slow");
+		}else{
+			$("#wepKey5Div").slideUp("slow");
+		}
+		
+		if($(this).val()=="psk" || $(this).val()=="psk2" || $(this).val()=="mixed-psk" ){
+			$("#wpaDiv5").slideDown("slow");	
+		}else{
+			$("#wpaDiv5").slideUp("slow");
+		}
+		
+	});
+	
+	
+	
+	$("#wepKey").on("keyup change",function(){
+		wep_validator($(this).attr("id"));  
+	  });
+	$("#wpaPassphrase").on("keyup change",function(){
+		wpa_validator($(this).attr("id"));  
+	  });
+	$("#wepKey5").on("keyup change",function(){
+		wep_validator($(this).attr("id"));  
+	  });
+	$("#wpaPassphrase5").on("keyup change",function(){
+		wpa_validator($(this).attr("id"));  
+	  });
+	
+	$("#ipAddress").on("keyup change",function(){
+		  process_ip($(this).attr("id"));  
+	  });
+	$("#subnetMask").on("keyup change",function(){
+		  process_ip($(this).attr("id"));  
+	  });
+	$("#defaultGateway").on("keyup change",function(){
+		  process_ip($(this).attr("id"));  
+	  });
+
+
+	
+	
+    
+
+    $("#btnCancel").click(function(){
+        document.getElementById("frmSettings").reset();
+        triggerChange();
+     });
+
+    function triggerChange(){
+    	$("#dhcp").trigger("change");
+        $("#operatingMode").trigger("change");
+        $("#operatingMode5").trigger("change");
+        $("#securityMode").trigger("change");
+        $("#securityMode5").trigger("change");    
+    }
+    triggerChange();
+
+    
+});
+
+</script>
+<div id="noticeContainer">
+<?php
+	displayNotices();
+?>
+</div>
+<form id='frmSettings' method='POST'  >
+	<h2>IP Address</h2>
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="selConnectionType">DHCP Client</label><a href="javascript:void(0);" id="dhcp_help" class="help-icon"></a>
+		</div>
+		<div class="form-item-input">
+			<?php $options=array("static"=>"Disabled", "dhcp"=>"Enabled");?>
+			<?php Page::draw_select($options, "dhcp", Uci::get(constants::NETWORK_LAN_PROTO));?>
+		</div>
+	</div>
+	<div id="ipOptionsDiv" >
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="ipAddress">IP Address 
+			</label><a href="javascript:void(0);" id="ipAddress_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='ipAddressDiv'>
+				<input name="ipAddress"  type="text" id="ipAddress" help="ipAddress_help"  maxlength="15" value="<?php echo Uci::get(constants::NETWORK_LAN_IPADDR)?>"/>
+			</div>
+		</div>
+	</div>
+	
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="subnetMask">Subnet Mask
+			</label><a href="javascript:void(0);" id="subnetMask_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='subnetMaskDiv'>
+				<input name="subnetMask"  type="text" id="subnetMask" help="subnetMask_help"  maxlength="15" value="<?php echo Uci::get(constants::NETWORK_LAN_NETMASK)?>"/>
+			</div>
+		</div>
+	</div>
+	
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="defaultGateway">Default Gateway
+			</label><a href="javascript:void(0);" id="defaultGateway_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='defaultGatewayDiv'>
+				<input name="defaultGateway"  type="text" id="defaultGateway" help="defaultGateway_help"  maxlength="15" value="<?php echo Uci::get(constants::NETWORK_LAN_GATEWAY)?>" />
+			</div>
+		</div>
+	</div>
+	</div>
+	<hr>
+	<h2>Wireless Settings 2.4GHz Frequency</h2>
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="operatingMode">Operating Mode
+			</label><a href="javascript:void(0);" id="operatingMode_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='operatingModeDiv'>
+				
+				<?php $options=array("ap+0"=>"Access Point");?>
+				<?php Page::draw_select($options, "operatingMode", Uci::get(constants::OPERATING_MODE_24)."+".Uci::get(constants::OPERATING_MODE_24_1));?>
+			</div>
+		</div>
+	</div>
+
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label id="lblNetworkName" for="networkName">Network Name (SSID)</label>
+			<a href="javascript:void(0);" id="networkName_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='networkNameDiv'>
+				<input name="networkName"  type="text" id="networkName" help="networkName_help"  maxlength="32" value="<?php echo Uci::get(constants::NETWORK_NAME_SSID_24) ?>"/>
+			</div>
+		</div>
+	</div>
+	
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="securityMode">Security Mode
+			</label><a href="javascript:void(0);" id="securityMode_help" class="help-icon"></a>
+		</div>
+		<div class="form-item-input">
+			<div id='securityModeDiv'>
+				<?php 
+				    $arrX= explode("+",Uci::get(constants::SECURITY_MODE_24)); 
+        		    $x=$arrX[0];
+				    $options=array("none"=>"Open", "wep"=>"WEP", "psk"=>"WPA", "psk2"=>"WPA2", "mixed-psk"=>"WPA/WPA2 Mixed");
+				?>
+				<?php Page::draw_select($options, "securityMode", $x);?>
+			</div>
+		</div>
+	</div>
+	
+	<div class="form-item clearfix" id="wepKeyDiv" style="display:none;"> 
+		<div class="form-item-label">
+			<label for="wepKey">WEP Key</label>
+			<a href="javascript:void(0);" id="wepKey_help" class="help-icon"></a>
+		</div>		
+		<div class="form-item-input">
+			<div id='wepKeyD'><?php $value2G = ""; if(Uci::get("luxul.dynamic.2G")=="hex"){$value2G = hex2bin(Uci::get(constants::WEP_KEY_24));}else{$value2G = Uci::get(constants::WEP_KEY_24);} ?>
+				<input name="wepKey"  type="text" id="wepKey" help="wepKey_help"  value="<?php echo $value2G; ?>"/>
+			</div>
+		</div>
+	</div>
+	
+	
+	<div id="wpaDiv" style="display:none;">
+		<div class="form-item clearfix">
+    		<div class="form-item-label">
+    			<label for="encryption">Encryption
+    			</label><a href="javascript:void(0);" id="encryption_help" class="help-icon"></a>
+    		</div>
+    		
+    		<div class="form-item-input">
+    			<div id='encryptionDiv'>
+    				
+    				<?php 
+        				$arrX= explode("+",Uci::get(constants::SECURITY_MODE_24)); 
+    					/*$x= str_replace('mixed','',$x);
+    					$x= str_replace('-psk','',$x);
+    					$x= preg_replace('|^\+|','',$x);
+    					if(strstr($x,'tkip+aes')){ 
+    					    $x="tkip+aes";
+    					}*/
+        				if(count($arrX)==3){
+        				    $x=$arrX[1]."+".$arrX[2];
+        				}else if(count($arrX)==2){
+        				    $x=$arrX[1];
+        				}
+    					$options=array("aes"=>"AES", "tkip+aes"=>"TKIP & AES", "tkip"=>"TKIP");
+					?>
+    				<?php Page::draw_select($options, "encryption", $x);?>
+    			</div>
+    		</div>
+    	</div>
+    	<div class="form-item clearfix" > 
+    		<div class="form-item-label">
+    			<label for="wpaPassphrase">WPA Passphrase</label>
+    			<a href="javascript:void(0);" id="wpaPassphrase_help" class="help-icon"></a>
+    		</div>
+    		<div class="form-item-input">
+    			<div id='wpaPassphraseDiv'>
+    				<input name="wpaPassphrase"  type="text" id="wpaPassphrase" help="wpaPassphrase_help"  value="<?php echo Uci::get(constants::WEP_KEY_24) ?>"/>
+    			</div>
+    		</div>
+    	</div>
+    	
+	
+	</div>
+	
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="channel">Channel
+			</label><a href="javascript:void(0);" id="channel_help" class="help-icon"></a>
+		</div>
+		<div class="form-item-input">
+			<div id='channelDiv'>
+				<?php $options=array("1"=>"1", "2"=>"2", "3"=>"3", "4"=>"4", "5"=>"5", "6"=>"6", "7"=>"7", "8"=>"8", "9"=>"9", "10"=>"10", "11"=>"11");?>
+				<?php Page::draw_select($options, "channel", Uci::get(constants::CHANNEL_24));?>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<h2>Wireless Settings 5GHz Frequency</h2>
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="operatingMode5">Operating Mode
+			</label><a href="javascript:void(0);" id="operatingMode5_help" class="help-icon"></a>
+		</div>
+		<div class="form-item-input">
+			<div id='operatingMode5Div'>
+				<?php $options=array("ap+0"=>"Access Point");?>
+				<?php Page::draw_select($options, "operatingMode5", Uci::get(constants::OPERATING_MODE_5)."+".Uci::get(constants::OPERATING_MODE_5_1));?>
+			</div>
+		</div>
+	</div>
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="networkName5" id="lblNetworkName5" >Network Name (SSID)</label>
+			<a href="javascript:void(0);" id="networkName5_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='networkName5'>
+				<input name="networkName5"  type="text" id="networkName5" help="networkName5_help"  maxlength="32" value="<?php echo Uci::get(constants::NETWORK_NAME_SSID_5) ?>" />
+			</div>
+		</div>
+	</div>
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="securityMode5">Security Mode
+			</label><a href="javascript:void(0);" id="securityMode5_help" class="help-icon"></a>
+		</div>
+		<div class="form-item-input">
+			<div id='securityMode5Div'>
+				<?php 
+				    $arrX= explode("+",Uci::get(constants::SECURITY_MODE_5)); 
+        		    $x=$arrX[0];
+				    $options=array("none"=>"Open", "wep"=>"WEP", "psk"=>"WPA", "psk2"=>"WPA2", "mixed-psk"=>"WPA/WPA2 Mixed");
+				?>
+				<?php Page::draw_select($options, "securityMode5", $x);?>
+			</div>
+		</div>
+	</div>
+	
+	<div class="form-item clearfix" id="wepKey5Div" style="display:none;"> 
+		<div class="form-item-label">
+			<label for="wepKey5">WEP Key</label>
+			<a href="javascript:void(0);" id="wepKey5_help" class="help-icon"></a>
+		</div>
+		
+		<div class="form-item-input">
+			<div id='wepKey5D'><?php $value5G =""; if(Uci::get("luxul.dynamic.5G")=="hex"){$value5G = @hex2bin(Uci::get(constants::WEP_KEY_5));}else{$value5G = Uci::get(constants::WEP_KEY_5);} ?>
+				<input name="wepKey5"  type="text" id="wepKey5" help="wepKey5_help"  value="<?php echo $value5G; ?>"/>
+			</div>
+		</div>
+	</div>
+	
+	
+	<div id="wpaDiv5" style="display:none;">
+		<div class="form-item clearfix">
+    		<div class="form-item-label">
+    			<label for="encryption5">Encryption
+    			</label><a href="javascript:void(0);" id="encryption5_help" class="help-icon"></a>
+    		</div>
+    		
+    		<div class="form-item-input">
+    			<div id='encryption5Div'>
+    				<?php 
+    				    $arrX= explode("+",Uci::get(constants::SECURITY_MODE_5)); 
+        				if(count($arrX)==3){
+        				    $x=$arrX[1]."+".$arrX[2];
+        				}else if(count($arrX)==2){
+        				    $x=$arrX[1];
+        				}
+    				    $options=array("aes"=>"AES", "tkip+aes"=>"TKIP & AES", "tkip"=>"TKIP"); 
+    				?>
+    				<?php Page::draw_select($options, "encryption5", $x);?>
+    			</div>
+    		</div>
+    	</div>
+    	<div class="form-item clearfix" > 
+    		<div class="form-item-label">
+    			<label for="wpaPassphrase5">WPA Passphrase</label>
+    			<a href="javascript:void(0);" id="wpaPassphrase5_help" class="help-icon"></a>
+    		</div>
+    		<div class="form-item-input">
+    			<div id='wpaPassphrase5Div'>
+    				<input name="wpaPassphrase5"  type="text" id="wpaPassphrase5" help="wpaPassphrase5_help"  value="<?php echo Uci::get(constants::WEP_KEY_5) ?>"/>
+    			</div>
+    		</div>
+    	</div>
+    	
+	</div>
+	
+	
+
+	<div class="form-item clearfix">
+		<div class="form-item-label">
+			<label for="channel5">Channel
+			</label><a href="javascript:void(0);" id="channel5_help" class="help-icon"></a>
+		</div>
+		<div class="form-item-input">
+			<?php if(Uci::get(constants::WIRELESS_FIVE_CHANNEL_WIDTH) == 'HT20'){
+			         $options=array("36"=>"36", "40"=>"40", "44"=>"44", "48"=>"48", "149"=>"149", "153"=>"153", "157"=>"157", "161"=>"161", "165"=>"165");
+			    }else{
+			        $options=array("36"=>"36", "40"=>"40", "44"=>"44", "48"=>"48", "149"=>"149", "153"=>"153", "157"=>"157", "161"=>"161"); 
+			     }
+			?>
+			<div id='channel5Div' >
+				<?php Page::draw_select($options, "channel5", Uci::get(constants::CHANNEL_5));?>
+			</div>
+		</div>
+	</div>
+	
+	<div class="button-container" align=center>
+	<?php Page::draw_submit("SRR");	?>
+	</div>
+</form>

@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# Luxul check for and add noscan
+
+. /lib/functions.sh
+
+handle_wifi_device() {
+        local config="$1"
+        uci_set wireless "$config" noscan 1
+}
+
+config_load wireless
+config_foreach handle_wifi_device wifi-device
+uci_commit wireless

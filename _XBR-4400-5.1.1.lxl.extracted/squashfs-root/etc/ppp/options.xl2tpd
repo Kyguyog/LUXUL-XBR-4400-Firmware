@@ -1,0 +1,19 @@
+noccp
+mtu 1410
+mru 1410
+nodefaultroute
+proxyarp
+silent
+lock
+noauth
+debug
+dump
+logfd 2
+logfile /var/log/xl2tpd.log
+novj
+novjccomp
+nopcomp
+noaccomp
+require-mschap-v2
+ms-dns 192.168.0.1
+

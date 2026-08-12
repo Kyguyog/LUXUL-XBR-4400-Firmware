@@ -1,0 +1,10 @@
+Package: strongswan-mod-dnskey
+Version: 5.2.2-1
+Depends: libc, strongswan
+Source: feeds/packages/net/strongswan
+License: GPL-2.0+
+Section: net
+Maintainer: Steven Barth <cyrus@openwrt.org>
+Architecture: brcm47xx
+Installed-Size: 2367
+Description:  StrongSwan DNS RR key decoding plugin

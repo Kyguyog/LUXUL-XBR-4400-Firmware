@@ -1,0 +1,23 @@
+#!/bin/sh
+
+[ "${ACTION}" = "released" ] || exit 0
+
+. /lib/functions.sh
+
+if [ "$SEEN" -lt 5 ]; then
+    echo -e "\n\n***********************" > /dev/console
+    echo        "**** Rebooting Now ****" > /dev/console
+    echo -e     "***********************\n\n" > /dev/console
+    /sbin/update_leds.sh -r
+    sync
+    reboot
+elif [ "$SEEN" -ge 5 ]; then
+    echo -e "\n\n***********************" > /dev/console
+    echo        "**** Factory Reset ****" > /dev/console
+    echo -e     "***********************\n\n" > /dev/console
+    /sbin/update_leds.sh -f
+    echo "y" | firstboot
+    sync
+    reboot
+fi
+

@@ -1,0 +1,59 @@
+#!/bin/sh /etc/rc.common
+
+START=90
+STOP=10
+PSK=/etc/ipsec.secrets
+CONFIG=/etc/strongswan.conf
+
+setup_login() {
+	local section=$1
+
+	config_get username "$section" username
+	config_get password "$section" password
+	[ -n "$username" ] || return 0
+	[ -n "$password" ] || return 0
+	echo "$username : XAUTH \"$password\"" >> $PSK
+}
+
+start() {
+	local enabled
+	config_load ipsec
+
+	config_get_bool enabled ipsec enabled '0'
+	[ "$enabled" -ne 1 ] && return
+
+	config_get localip ipsec localip
+	sed -i "s/\(^[[:blank:]]*server =\).*/\1 $localip/" $CONFIG
+	sed -i "s/^dns1 = .*/dns1 = $localip/" $CONFIG
+
+	config_get aggressive ipsec aggressive
+	if [ "$aggressive" -eq 0 ]; then
+		sed -i 's/\(^i_dont_care_about_security_and_use_aggressive_mode_psk\).*/\1 = no/' $CONFIG
+	else
+		sed -i 's/\(^i_dont_care_about_security_and_use_aggressive_mode_psk\).*/\1 = yes/' $CONFIG
+	fi
+
+	echo "# /etc/ipsec.secrets - strongSwan IPsec secrets file" > $PSK
+	config_get psk ipsec psk
+	echo "%any : PSK \"$psk\"" >> $PSK
+
+	l2tp=$(uci get -q xl2tpd.xl2tpd.enabled)
+	[ "$l2tp" -ne "1" ] && {
+		config_load vpnusers
+		config_foreach setup_login login
+	}
+
+	ipsec start
+}
+
+stop() {
+	ipsec stop
+}
+
+restart() {
+	ipsec restart
+}
+
+reload() {
+	ipsec update
+}

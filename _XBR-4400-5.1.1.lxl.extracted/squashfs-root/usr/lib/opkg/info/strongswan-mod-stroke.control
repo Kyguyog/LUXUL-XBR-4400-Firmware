@@ -1,0 +1,10 @@
+Package: strongswan-mod-stroke
+Version: 5.2.2-1
+Depends: libc, strongswan, strongswan-utils
+Source: feeds/packages/net/strongswan
+License: GPL-2.0+
+Section: net
+Maintainer: Steven Barth <cyrus@openwrt.org>
+Architecture: brcm47xx
+Installed-Size: 64528
+Description:  StrongSwan Stroke plugin

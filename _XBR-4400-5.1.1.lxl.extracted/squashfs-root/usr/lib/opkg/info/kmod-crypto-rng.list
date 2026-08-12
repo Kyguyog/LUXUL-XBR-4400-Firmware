@@ -1,0 +1,3 @@
+/lib/modules/3.10.49/krng.ko
+/lib/modules/3.10.49/rng.ko
+/etc/modules.d/09-crypto-rng

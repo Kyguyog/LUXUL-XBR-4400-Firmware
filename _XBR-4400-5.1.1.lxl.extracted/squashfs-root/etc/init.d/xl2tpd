@@ -1,0 +1,49 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=92
+BIN=/usr/sbin/xl2tpd
+CONFIG=/etc/xl2tpd/xl2tpd.conf
+CHAP_SECRETS=/var/etc/chap-secrets
+
+setup_login() {
+	local section="$1"
+
+	config_get username "$section" username
+	config_get password "$section" password
+	[ -n "$username" ] || return 0
+	[ -n "$password" ] || return 0
+	echo "$username l2tp-server $password *" >> $CHAP_SECRETS
+}
+
+start() {
+	local enabled remoteip
+	config_load xl2tpd
+
+	config_get_bool enabled xl2tpd enabled '0'
+	[ "$enabled" -ne 1 ] && return
+
+	config_get localip xl2tpd localip
+	sed -i "s/^local ip.*/local ip = $localip/" $CONFIG
+
+	config_get remoteip xl2tpd remoteip
+	remoteip_start=$(echo $remoteip | cut -d - -f 1)
+	remoteip_stop=$(echo "$remoteip" | cut -f1,2,3 -d'.')"."$(echo "$remoteip" | sed -n -e 's/^.*-//p')
+	sed -i "s/^ip range.*/ip range = $remoteip_start-$remoteip_stop/" $CONFIG
+
+	mkdir -p /var/etc
+	cp $CONFIG /var/etc/xl2tpd.conf
+
+	mkdir -p /var/run/xl2tpd
+
+	config_load vpnusers
+	config_foreach setup_login login
+
+	ln -sfn $CHAP_SECRETS /etc/ppp/chap-secrets
+	service_start $BIN
+}
+
+stop() {
+        service_stop $BIN
+        echo > /var/etc/chap-secrets
+}

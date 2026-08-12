@@ -1,0 +1,9 @@
+Package: luxul-ui-php-core
+Version: 1
+Depends: libc, php5, php5-cgi, php5-mod-session
+Source: /workspace/sources/luxul-packages.git/luxul/luxul-ui-php
+Section: luxul
+Maintainer: Dan Haab <dhaab@luxul.com>
+Architecture: brcm47xx
+Installed-Size: 3824
+Description:  Luxul PHP based UI files

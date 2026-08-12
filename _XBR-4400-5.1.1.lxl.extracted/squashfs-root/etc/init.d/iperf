@@ -1,0 +1,17 @@
+#!/bin/sh
+#Copyright (C)2013 Luxul
+
+case "$1" in
+   start)
+      /usr/bin/iperf -s -D
+      if [ _$2 != "_" ]
+      then
+         nohup `sleep $2m; /etc/init.d/iperf stop`
+      fi
+;;
+
+stop)
+   killall iperf
+;;
+
+esac

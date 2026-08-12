@@ -1,0 +1,10 @@
+Package: strongswan-mod-nonce
+Version: 5.2.2-1
+Depends: libc, strongswan
+Source: feeds/packages/net/strongswan
+License: GPL-2.0+
+Section: net
+Maintainer: Steven Barth <cyrus@openwrt.org>
+Architecture: brcm47xx
+Installed-Size: 1749
+Description:  StrongSwan nonce genereation plugin

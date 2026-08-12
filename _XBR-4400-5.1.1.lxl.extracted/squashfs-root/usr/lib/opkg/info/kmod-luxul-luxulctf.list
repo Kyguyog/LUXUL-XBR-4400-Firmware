@@ -1,0 +1,4 @@
+/etc/init.d/luxulctf
+/lib/modules/3.10.49/luxulctf.ko
+/etc/config/luxulctf
+/etc/modules.d/30-luxul-luxulctf
