@@ -47,6 +47,7 @@ jobs:
           mksquashfs squashfs-root custom_rootfs.squashfs \
             -comp xz \
             -b 262144 \
+            -no-xattrs \
             -noappend \
             -all-root \
             -e .git .github *.bin *.lxl magic.py custom_rootfs.squashfs
@@ -58,14 +59,14 @@ jobs:
       - name: Patch Headers and Checksums
         run: |
           python3 magic.py
-          mv custom_XBR-4400.bin custom_XBR-4400.lxl
 
       - name: Check Output Firmware Size
         run: |
           SIZE=$(stat -c%s "custom_XBR-4400.lxl")
           echo "Generated Firmware Size: $SIZE bytes"
-          if [ $SIZE -gt 10000000 ]; then
-            echo "[-] Warning: Firmware size exceeds 10MB! Upload may fail on Web UI."
+          if [ $SIZE -gt 16000000 ]; then
+            echo "[-] Warning: Firmware size exceeds flash size boundary!"
+            exit 1
           fi
 
       - name: Upload Artifact
