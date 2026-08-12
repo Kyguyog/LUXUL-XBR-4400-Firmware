@@ -13,7 +13,7 @@
         <label for="firmwareVersion">Firmware Version</label>
     </div>
     <div class="form-item-input-text">
-        <?= $data[FIRMWARE_VERSION]; ?>
+        <?= $data[FIRMWARE_VERSION]; ?><?php $commit = trim((string)@file_get_contents('/etc/luxul_commit')); if ($commit !== '') { ?> (<?=htmlspecialchars($commit);?>)<?php } ?>
     </div>
 </div>
 

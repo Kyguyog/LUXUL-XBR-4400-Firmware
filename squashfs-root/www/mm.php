@@ -169,6 +169,7 @@ exec("envram get et0macaddr",$mac);
 exec("uci get luxul.static.hw_model",$hw_model);
 exec("uci get luxul.static.hw_version",$hw_version);
 exec("uci get luxul.static.fw_version",$fw_version);
+$fw_commit = trim((string)@file_get_contents('/etc/luxul_commit'));
 if ($board_id = 'luxul_xap1510_v1' || 'luxul_xap1410_v1'){
 		exec("envram get 1:macaddr",$fiveg_mac);
 		exec("envram get 0:macaddr",$twofourg_mac);
@@ -435,7 +436,7 @@ if ($has_usb) {
 			<span id='version-model'><?php print("Model: ".$hw_model[0]." ".$hw_version[0]); ?></span>
 			<br>
 			<span class='firmInfo'>
-			<span id='version-firmware'><?php print("Firmware version: ".$fw_version[0]); ?></span>
+			<span id='version-firmware'><?php print("Firmware version: ".$fw_version[0]. ($fw_commit !== '' ? " (".$fw_commit.")" : "")); ?></span>
 			</span>
 		</p>
 	</header>

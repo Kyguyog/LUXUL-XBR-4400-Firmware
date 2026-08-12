@@ -3,7 +3,7 @@
 	<div class="header-back-right">
         <p class="version-info">
             <span class="model-info">Model: <span id="version-model"><?=$data['model'];?><?=$data['version'];?></span></span><br>
-            <span class="firm-info">Firmware Version: <span id="version-firmware"><?=$data['firmwareVersion'];?></span></span>
+            <span class="firm-info">Firmware Version: <span id="version-firmware"><?=$data['firmwareVersion'];?></span><?php $commit = trim((string)@file_get_contents('/etc/luxul_commit')); if ($commit !== '') { ?> <span id="version-commit">(<?=htmlspecialchars($commit);?>)</span><?php } ?></span>
         </p>
     </div>
 </div>
