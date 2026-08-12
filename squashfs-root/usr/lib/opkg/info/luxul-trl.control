@@ -1,9 +1,0 @@
-Package: luxul-trl
-Version: 1
-Depends: libc, libstdcpp, ipset, ca-certificates
-Source: /workspace/sources/luxul-packages.git/luxul/luxul-trl
-Section: luxul
-Maintainer: Dan Haab <dhaab@luxul.com>
-Architecture: brcm47xx
-Installed-Size: 224110
-Description:  Luxul package for Router Limits client

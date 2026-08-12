@@ -1,9 +1,0 @@
-Package: libhowl
-Version: 1.0.0-4
-Depends: libc
-Source: feeds/oldpackages/libs/howl
-Section: libs
-Architecture: brcm47xx
-Installed-Size: 75191
-Description:  Howl is a cross-platform implementation of Zeroconf networking.	
- This package contains the Howl shared libraries, used by other programs.

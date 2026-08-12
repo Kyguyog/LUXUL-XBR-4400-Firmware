@@ -1,8 +1,0 @@
-Package: djbdns-tools
-Version: 1.05-7
-Depends: libc
-Source: feeds/oldpackages/net/djbdns
-Section: net
-Architecture: brcm47xx
-Installed-Size: 45283
-Description:  Several command-line DNS client utilities and DNS debugging tools.

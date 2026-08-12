@@ -1,3 +1,0 @@
-config fwman 'basic'
-	option repo_url 'http://s3-us-west-2.amazonaws.com/luxul.release/'
-	option repo_file 'fw_rev'

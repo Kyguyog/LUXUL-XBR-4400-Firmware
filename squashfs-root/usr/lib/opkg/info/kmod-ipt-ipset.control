@@ -1,9 +1,0 @@
-Package: kmod-ipt-ipset
-Version: 3.10.49+6.20.1-1
-Depends: kernel (=3.10.49-1-3ee83492cd59c5c817337858bd6a0b1a), kmod-ipt-core, kmod-nfnetlink
-Source: package/network/utils/ipset
-Section: kernel
-Maintainer: Jo-Philipp Wich <jow@openwrt.org>
-Architecture: brcm47xx
-Installed-Size: 84123
-Description:  IPset netfilter modules

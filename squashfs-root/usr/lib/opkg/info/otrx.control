@@ -1,9 +1,0 @@
-Package: otrx
-Version: 1
-Depends: libc
-Source: package/utils/otrx
-Section: utils
-Maintainer: Rafał Miłecki <zajec5@gmail.com>
-Architecture: brcm47xx
-Installed-Size: 4796
-Description:  This package contains an utility that allows validating TRX images.

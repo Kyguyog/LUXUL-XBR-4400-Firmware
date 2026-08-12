@@ -1,8 +1,0 @@
-config TRLConfig 'TRL'
-	option enabled '0'
-	option oem 'Luxul'
-	option modelNum ''
-	option apiKey ''
-	option pairingCode ''
-	option status "connecting"
-	option activateURL 'https://rlgo.co/launchluxul?pc='

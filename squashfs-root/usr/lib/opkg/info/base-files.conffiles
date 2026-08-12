@@ -1,8 +1,0 @@
-/etc/hosts
-/etc/inittab
-/etc/profile
-/etc/shells
-/etc/sysctl.conf
-/etc/rc.local
-/etc/sysupgrade.conf
-/etc/config/system

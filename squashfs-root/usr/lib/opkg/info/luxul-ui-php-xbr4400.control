@@ -1,9 +1,0 @@
-Package: luxul-ui-php-xbr4400
-Version: 1
-Depends: libc, luxul-ui-php-core
-Source: /workspace/sources/luxul-packages.git/luxul/luxul-ui-php
-Section: luxul
-Maintainer: Dan Haab <dhaab@luxul.com>
-Architecture: brcm47xx
-Installed-Size: 457775
-Description:  Luxul PHP UI code for Luxul XBR-4400

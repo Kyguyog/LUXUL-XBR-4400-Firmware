@@ -1,8 +1,0 @@
-Package: ca-certificates
-Version: 20141019
-Depends: libc
-Source: package/system/ca-certificates
-Section: base
-Architecture: brcm47xx
-Installed-Size: 176089
-Description:  System CA certificates

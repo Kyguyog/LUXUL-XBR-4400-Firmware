@@ -1,7 +1,0 @@
-packages src-git  d654a22  https://github.com/openwrt/packages.git;for-14.07
-luci     src-git  84346cd  http://git.openwrt.org/project/luci.git;luci-0.12
-routing  src-git  8ff37ec  https://github.com/openwrt-routing/packages.git;for-14.07
-telephony src-git  57135bb  http://git.openwrt.org/feed/telephony.git;for-14.07
-management src-git  c100025  https://github.com/openwrt-management/packages.git;for-14.07
-oldpackages src-git  5dd0b3b  http://git.openwrt.org/14.07/packages.git
-luxul    src-link local    /workspace/sources/luxul-packages.git
