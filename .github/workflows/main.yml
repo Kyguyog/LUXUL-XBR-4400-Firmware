@@ -1,0 +1,53 @@
+name: Build Luxul XBR-4400 Firmware
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y squashfs-tools python3
+
+      - name: Extract Kernel Header from Stock Image
+        run: |
+          # Download stock firmware or reference kernel_header.bin stored in repo
+          if [ -f "kernel_header.bin" ]; then
+            echo "Using committed kernel_header.bin"
+          else
+            echo "kernel_header.bin not found! Ensure kernel_header.bin is in the repo."
+            exit 1
+          fi
+
+      - name: Build SquashFS Image
+        run: |
+          mksquashfs squashfs-root custom_rootfs.squashfs \
+            -comp xz \
+            -b 262144 \
+            -noappend \
+            -all-root
+
+      - name: Combine Header and RootFS
+        run: |
+          cat kernel_header.bin custom_rootfs.squashfs > custom_XBR-4400.bin
+
+      - name: Patch TRX and Luxul MD5 Headers
+        run: |
+          python3 magic.py
+          mv custom_XBR-4400.bin custom_XBR-4400.lxl
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom_XBR-4400.lxl
+          path: custom_XBR-4400.lxl
+          retention-days: 30
