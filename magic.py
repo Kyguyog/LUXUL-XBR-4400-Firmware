@@ -19,20 +19,32 @@ if padding > 0:
     file_size += padding
     print(f"[+] Added {padding} bytes of padding.")
 
-# 2. Calculate correct RootFS offset (Partition 2)
-# TRX starts at offset 64. Kernel header size is added to the 28-byte TRX header.
 trx_offset = 64
-trx_header_size = 28
 
-if os.path.exists(kernel_header_file):
-    kernel_size = os.path.getsize(kernel_header_file)
-    rootfs_offset = trx_header_size + kernel_size
-    print(f"[+] Calculated RootFS offset from '{kernel_header_file}': {hex(rootfs_offset)} ({rootfs_offset} bytes)")
-else:
-    # Default stock fallback if kernel_header.bin size is unknown
-    rootfs_offset = 0x00107800
-    print(f"[!] Warning: '{kernel_header_file}' not found. Falling back to stock RootFS offset: {hex(rootfs_offset)}")
+# 2. Find exact SquashFS offset relative to the TRX header
+# SquashFS magic bytes in little-endian: hsqs -> 0x73717368 (b"hsqs")
+squashfs_magic = b"hsqs"
+rootfs_offset = None
 
+with open(filename, "rb") as f:
+    f.seek(trx_offset)
+    trx_data = f.read()
+    sqfs_pos = trx_data.find(squashfs_magic)
+    if sqfs_pos != -1:
+        rootfs_offset = sqfs_pos
+        print(f"[+] Found SquashFS magic 'hsqs' at TRX offset: {hex(rootfs_offset)} ({rootfs_offset} bytes)")
+
+# Fallback offset calculation if magic bytes aren't auto-detected
+if rootfs_offset is None:
+    if os.path.exists(kernel_header_file):
+        # kernel_header.bin ALREADY includes the 28-byte TRX header
+        rootfs_offset = os.path.getsize(kernel_header_file)
+        print(f"[+] Calculated RootFS offset from '{kernel_header_file}' size: {hex(rootfs_offset)} ({rootfs_offset} bytes)")
+    else:
+        rootfs_offset = 0x00107800
+        print(f"[!] Warning: Falling back to default stock RootFS offset: {hex(rootfs_offset)}")
+
+# 3. Update headers and checksums
 with open(filename, "r+b") as f:
     f.seek(trx_offset)
     if f.read(4) != b"HDR0":
@@ -41,15 +53,15 @@ with open(filename, "r+b") as f:
 
     trx_len = file_size - trx_offset
 
-    # Write updated TRX length (Offset 68 / TRX + 4)
+    # Write updated TRX length (TRX + 4)
     f.seek(trx_offset + 4)
     f.write(struct.pack("<I", trx_len))
 
-    # WRITE CORRECT ROOTFS OFFSET (Offset 88 / TRX + 24)
+    # Write correct RootFS offset (Partition 2 / TRX + 24)
     f.seek(trx_offset + 24)
     f.write(struct.pack("<I", rootfs_offset))
 
-    # Calculate & write TRX CRC32 (Offset 72 / TRX + 8)
+    # Calculate & write TRX CRC32 (TRX + 8)
     # CRC32 covers everything in TRX from offset 12 to the end of the file
     f.seek(trx_offset + 12)
     trx_payload = f.read()
@@ -60,7 +72,7 @@ with open(filename, "r+b") as f:
 
     print(f"[+] TRX Header updated: Length={trx_len} bytes, RootFS Offset={hex(rootfs_offset)}, CRC32={hex(crc)}")
 
-    # --- 3. Update Outer Luxul MD5 Header ---
+    # --- 4. Update Outer Luxul MD5 Header ---
     f.seek(64)
     file_payload = f.read()
     new_md5_hex = hashlib.md5(file_payload).hexdigest().encode("ascii")
