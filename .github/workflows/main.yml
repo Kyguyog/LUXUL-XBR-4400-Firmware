@@ -10,42 +10,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install Build Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y squashfs-tools python3
 
-      - name: Extract Kernel Header from Stock Image
+      - name: Verify Kernel Header File
         run: |
-          # Download stock firmware or reference kernel_header.bin stored in repo
-          if [ -f "kernel_header.bin" ]; then
-            echo "Using committed kernel_header.bin"
-          else
-            echo "kernel_header.bin not found! Ensure kernel_header.bin is in the repo."
+          if [ ! -f "kernel_header.bin" ]; then
+            echo "[-] Error: kernel_header.bin missing from repository root!"
             exit 1
           fi
 
-      - name: Build SquashFS Image
+      - name: Clean Temporary RootFS Files
+        run: |
+          # Purge non-persistent runtime files inside squashfs-root
+          rm -rf squashfs-root/tmp/*
+          rm -rf squashfs-root/var/log/*
+          rm -rf squashfs-root/var/run/*
+
+      - name: Build SquashFS RootFS
         run: |
           mksquashfs squashfs-root custom_rootfs.squashfs \
             -comp xz \
             -b 262144 \
             -noappend \
-            -all-root
+            -all-root \
+            -e .git .github *.bin *.lxl magic.py custom_rootfs.squashfs
 
-      - name: Combine Header and RootFS
+      - name: Combine Kernel Header and RootFS
         run: |
           cat kernel_header.bin custom_rootfs.squashfs > custom_XBR-4400.bin
 
-      - name: Patch TRX and Luxul MD5 Headers
+      - name: Patch Headers and Checksums
         run: |
           python3 magic.py
           mv custom_XBR-4400.bin custom_XBR-4400.lxl
 
-      - name: Upload Firmware Artifact
+      - name: Check Output Firmware Size
+        run: |
+          SIZE=$(stat -c%s "custom_XBR-4400.lxl")
+          echo "Generated Firmware Size: $SIZE bytes"
+          if [ $SIZE -gt 10000000 ]; then
+            echo "[-] Warning: Firmware size exceeds 10MB! Upload may fail on Web UI."
+          fi
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: custom_XBR-4400.lxl
