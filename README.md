@@ -75,8 +75,6 @@ HDR0 | length | raw_crc32 | flag_version | off1 | off2 | off3 | data
 scp the image to the router, then run `sysupgrade` from its root shell:
 
 ```sh
-scp build/firmware.bin root@192.168.1.1:/tmp/
-ssh root@192.168.1.1
 sysupgrade -n /tmp/firmware.bin
 ```
 
