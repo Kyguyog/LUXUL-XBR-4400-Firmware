@@ -7,6 +7,7 @@ on:
       - "squashfs-root/**"
       - "kernel.bin"
       - "build.py"
+      - "mtimes.tsv"
       - ".github/workflows/*.yml"
   workflow_dispatch:
 

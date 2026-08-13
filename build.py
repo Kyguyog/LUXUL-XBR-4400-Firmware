@@ -22,10 +22,11 @@ KERNEL_BIN = os.path.join(ROOT, "kernel.bin")
 WORK_DIR = os.path.join(ROOT, "build")
 ROOTFS_SQUASHFS = os.path.join(WORK_DIR, "rootfs.squashfs")
 OUTPUT = os.path.join(ROOT, "firmware.bin")
+MTIMES_FILE = os.path.join(ROOT, "mtimes.tsv")
 
 MKSQUASHFS_OPTS = [
     "-comp", "xz", "-b", "262144", "-no-xattrs", "-noappend", "-all-root",
-    "-mkfs-time", "0", "-all-time", "0",
+    "-mkfs-time", "1786544698",
 ]
 
 
@@ -33,7 +34,27 @@ def raw_crc32(data):
     return (zlib.crc32(data) & 0xFFFFFFFF) ^ 0xFFFFFFFF
 
 
+def restore_mtimes():
+    """Apply the committed inode-mtime manifest so builds are byte-identical.
+
+    Git does not preserve file timestamps, so a fresh checkout would otherwise
+    stamp wall-clock mtimes and produce a different (and unbootable) image.
+    """
+    if not os.path.isfile(MTIMES_FILE):
+        return
+    applied = 0
+    with open(MTIMES_FILE, encoding="utf-8") as f:
+        for line in f:
+            rel, ts = line.rstrip("\n").split("\t")
+            path = os.path.join(SQUASHFS_DIR, rel) if rel else SQUASHFS_DIR
+            if os.path.lexists(path):
+                os.utime(path, (int(ts), int(ts)), follow_symlinks=False)
+                applied += 1
+    print(f"[+] restored {applied} inode mtimes from {os.path.basename(MTIMES_FILE)}")
+
+
 def make_squashfs():
+    restore_mtimes()
     os.makedirs(WORK_DIR, exist_ok=True)
     cmd = ["mksquashfs", SQUASHFS_DIR, ROOTFS_SQUASHFS] + MKSQUASHFS_OPTS
     print("[+] " + " ".join(cmd))
