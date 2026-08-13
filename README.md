@@ -93,28 +93,3 @@ flash -noheader 192.168.1.100:firmware.bin flash0.trx
 `firmware.bin` is a raw TRX (no LXL header), so `-noheader` mode of `flash`
 with the `flash0.trx` mtd partition is used. A web upload of the LXL image is
 also supported by the stock updater if you prefer that route.
-
-## Troubleshooting
-
-### Boot hangs in early userspace after flashing (`procd: Failed to stat /dev/console`)
-
-If the device boots to CFE, loads the kernel, mounts the squashfs rootfs, but
-then hangs with preinit errors like `kmod: failed to open /proc/modules` and
-`open: No such file or directory` — the image was built with `-all-time 0`.
-That flag zeroes every inode mtime (epoch 1970), which the early userspace
-does not survive. The `build.py` in this repo pins only `-mkfs-time` and
-produces an image byte-identical to a known-good flash.
-
-Verify a rebuild matches the known-good image:
-
-```sh
-./tools/build.sh
-md5sum build/firmware.bin   # expect 877bda9cb3cd5461e58d08125730601f
-```
-
-## CI
-
-`.github/workflows/build.yml` compiles `build/firmware.bin` automatically whenever
-files under `squashfs-root/`, `kernel.bin`, or the build script change, and
-uploads the artifact. Tagging a release (e.g. `v1.0`) attaches `firmware.bin`
-to the GitHub release.
