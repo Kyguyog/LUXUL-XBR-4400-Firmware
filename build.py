@@ -29,6 +29,14 @@ MKSQUASHFS_OPTS = [
     "-mkfs-time", "1786544698",
 ]
 
+REQUIRED_DIRS = [
+    "dev", "mnt", "overlay", "proc", "sys", "tmp",
+    "etc/crontabs", "lib/firmware", "usr/lib/opkg/lists",
+    "etc/ipsec.d/aacerts", "etc/ipsec.d/acerts", "etc/ipsec.d/cacerts",
+    "etc/ipsec.d/certs", "etc/ipsec.d/crls", "etc/ipsec.d/ocspcerts",
+    "etc/ipsec.d/private", "etc/ipsec.d/reqs",
+]
+
 
 def raw_crc32(data):
     return (zlib.crc32(data) & 0xFFFFFFFF) ^ 0xFFFFFFFF
@@ -54,6 +62,8 @@ def restore_mtimes():
 
 
 def make_squashfs():
+    for d in REQUIRED_DIRS:
+        os.makedirs(os.path.join(SQUASHFS_DIR, d), exist_ok=True)
     restore_mtimes()
     os.makedirs(WORK_DIR, exist_ok=True)
     cmd = ["mksquashfs", SQUASHFS_DIR, ROOTFS_SQUASHFS] + MKSQUASHFS_OPTS
