@@ -1,0 +1,9 @@
+Package: luxul-base-files-xbr4400
+Version: 1
+Depends: libc, luxul-base-files-core
+Source: /workspace/sources/luxul-packages.git/luxul/luxul-base-files
+Section: luxul
+Maintainer: Dan Haab <dhaab@luxul.com>
+Architecture: brcm47xx
+Installed-Size: 7969
+Description:  Base files for Luxul XBR-4400

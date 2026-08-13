@@ -1,0 +1,9 @@
+Package: howl-mdnsresponder
+Version: 1.0.0-4
+Depends: libc, libhowl, libpthread
+Source: feeds/oldpackages/libs/howl
+Section: net
+Architecture: brcm47xx
+Installed-Size: 3018
+Description:  Howl is a cross-platform implementation of Zeroconf networking.	
+ This package contains an mDNS (Multicast DNS) service responder daemon.

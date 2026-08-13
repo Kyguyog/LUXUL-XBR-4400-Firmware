@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Luxul fixup for TRL config
+
+# Delete unwanted options
+wanInterface=$(uci get -q TRL.TRL.wanInterface)
+[ -n "$wanInterface" ] && uci delete -q TRL.TRL.wanInterface
+lanInterface=$(uci get -q TRL.TRL.lanInterface)
+[ -n "$lanInterface" ] && uci delete -q TRL.TRL.lanInterface
+serverEndpoint=$(uci get -q TRL.TRL.serverEndpoint)
+[ -n "$serverEndpoint" ] && uci delete -q TRL.TRL.serverEndpoint
+# Add new option(s)
+activateURL=$(uci get -q TRL.TRL.activateURL)
+[ "$activateURL" != "https://rlgo.co/launchluxul?pc=" ] && uci set -q TRL.TRL.activateURL='https://rlgo.co/launchluxul?pc='
+uci commit TRL

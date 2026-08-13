@@ -1,0 +1,44 @@
+# Luxul system commands
+
+hostname=$(uci get -q system.@system[0].hostname)
+echo "$hostname" > /proc/sys/kernel/hostname 2>/dev/null
+
+# clear reboot flag if set
+[ "$(uci get -q luxul.dynamic.reboot_req)" != "0" ] && uci set luxul.dynamic.reboot_req=0 && uci commit luxul
+
+# clear update available flag if set
+[ "$(uci get -q luxul.dynamic.fwman_update)" != "0" ] && uci set luxul.dynamic.fwman_update=0 && uci commit luxul
+
+model=$(uci get -q luxul.static.hw_model)
+cfg_pass=$(uci get -q luxul.dynamic.ui_password)
+		
+cp /etc/lighttpd/auth.conf /tmp/
+sed -i -e "s/^admin:.*$/admin:$cfg_pass/" /tmp/auth.conf
+/etc/init.d/lighttpd start
+
+# XBR enable jumbo frames
+model=$(uci get luxul.static.hw_model)
+if [ "$model" == "XBR-4400" ]; then
+	swconfig dev switch0 set enable_jumbo 1
+	swconfig dev switch0 set apply 1
+fi
+
+# run any board specific scripts
+board_id=$(nvram get board_id)
+[ "$board_id" == "luxul_xvwp30_v1" ] && /sbin/dhcp-chk.sh
+[ "$board_id" == "luxul_xvwp30_v1" ] && sysctl -w vm.min_free_kbytes=4096
+[ "$board_id" == "luxul_xwr3100_v1" ] && /usr/sbin/port-led.sh &
+[ "$board_id" == "luxul_xwr1200_v1" ] && /usr/sbin/port-led.sh &
+
+# run beta checker
+[ -e "/usr/sbin/beta-check.sh" ] && /usr/sbin/beta-check.sh
+
+# run any startup helpers
+[ -e "/usr/sbin/startup_scripts.sh" ] && /usr/sbin/startup_scripts.sh
+
+sync
+# set leds to normal state
+/sbin/update_leds.sh
+
+exit 0
+

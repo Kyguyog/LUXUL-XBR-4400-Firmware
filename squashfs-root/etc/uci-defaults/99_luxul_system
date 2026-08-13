@@ -1,0 +1,62 @@
+#!/bin/sh
+#
+# Luxul system config 
+
+# Set the hardware model and revision
+model=$(envram get board_id | sed -e 's/luxul_//g' | tr [a-z] [A-Z])
+hw_version=$(echo "$model" | cut -d "_" -f 2)
+hw_model=$(echo "$model" | cut -d "_" -f 1 | sed -e 's/\(...\)\(.*\)/\1-\2/')
+uci set luxul.static.hw_model=$hw_model
+uci set luxul.static.hw_version=$hw_version
+echo "$hw_model" > /proc/sys/kernel/hostname
+uci set system.@system[0].hostname=$hw_model
+uci commit system
+
+# Set the firmware version
+fw_version=$(uci get -q  /etc/fw_version.static.fw_version)
+uci set luxul.static.fw_version=$fw_version
+uci commit luxul
+
+# Check that the samba name is properly set
+samba_name=$(uci get samba.@samba[1].name)
+if [ "%NAME%" == "$samba_name" ]; then
+	uci set samba.@samba[1].name=$hw_model
+	uci set samba.@samba[1].description="$hw_model USB Shares"
+	uci commit samba
+fi
+
+# Check that the minidlna name is properly set
+minidlna_name=$(uci get minidlna.config.friendly_name)
+if [ "%NAME%" == "$minidlna_name" ]; then
+	uci set minidlna.config.friendly_name=$hw_model
+	uci set minidlna.config.model_number=$hw_model
+	uci commit minidlna
+fi
+
+# check for and execute any nvram fixes
+[ -e /sbin/nvram-fix.sh ] && /sbin/nvram-fix.sh
+
+# check for mDNSResponder changes
+cmp /rom/etc/mDNSResponder.conf /etc/mDNSResponder.conf > /dev/null
+[ $? -eq 1 ] && cp /rom/etc/mDNSResponder.conf /etc/mDNSResponder.conf
+
+# kill pesky ddns.sample
+[ -e /etc/config/ddns.sample ] && rm -f /etc/config/ddns.sample
+
+# fixup sshd_config
+/usr/sbin/ssh_fixup.sh
+
+# Luxul m2u_fixup
+/sbin/m2u_fixup.sh
+
+# if lighttpd is running kill it
+light=$(pidof lighttpd)
+[ -n "$light" ] && killall lighttpd
+
+# add in the fwman cron
+grep -q "fwman.sh" /etc/crontabs/root 2>/dev/null
+if [ $? -ne 0 ]; then
+	echo '0 2 * * * sleep $(( $RANDOM \% 240 ))m ; /usr/sbin/fwman.sh -u; /usr/sbin/fwman.sh -g' >> /etc/crontabs/root
+	/etc/init.d/cron enable
+	/etc/init.d/cron start
+fi

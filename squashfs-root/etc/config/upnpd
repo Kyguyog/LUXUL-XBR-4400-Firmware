@@ -1,0 +1,38 @@
+
+config upnpd 'config'
+	option enable_natpmp '1'
+	option enable_upnp '1'
+	option secure_mode '1'
+	option log_output '0'
+	option download '1024'
+	option upload '512'
+	option internal_iface 'lan'
+	option port '5000'
+	option upnp_lease_file '/var/upnp.leases'
+	option uuid 'a54de3c2-e48e-4b4d-99b8-b0c05522c46f'
+	option external_iface 'wan'
+	option external_zone 'wan'
+
+config perm_rule
+	option action 'deny'
+	option ext_ports '4500'
+	option comment 'IPSec Reserved Port'
+
+config perm_rule
+	option action 'deny'
+	option ext_ports '1701'
+	option comment 'L2TP Reserved Port'
+
+config perm_rule
+	option action 'allow'
+	option ext_ports '1024-65535'
+	option int_addr '0.0.0.0/0'
+	option int_ports '1024-65535'
+	option comment 'Allow high ports'
+
+config perm_rule
+	option action 'deny'
+	option ext_ports '0-65535'
+	option int_addr '0.0.0.0/0'
+	option int_ports '0-65535'
+	option comment 'Default deny'

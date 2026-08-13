@@ -1,0 +1,48 @@
+name: Build firmware.bin
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "squashfs-root/**"
+      - "kernel.bin"
+      - "build.py"
+      - ".github/workflows/*.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install squashfs-tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends squashfs-tools
+
+      - name: Build firmware.bin
+        run: python3 build.py
+
+      - name: Upload firmware.bin
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware.bin
+          path: firmware.bin
+          if-no-files-found: error
+
+      - name: Attach to release on tag push
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --generate-notes firmware.bin || \
+          gh release upload "$GITHUB_REF_NAME" firmware.bin \
+            --repo "$GITHUB_REPOSITORY" --clobber

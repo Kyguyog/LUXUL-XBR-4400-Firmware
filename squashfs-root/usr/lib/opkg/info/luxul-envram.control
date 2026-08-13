@@ -1,0 +1,8 @@
+Package: luxul-envram
+Version: 1
+Depends: libc
+Source: /workspace/sources/luxul-packages.git/luxul/luxul-envram
+Section: luxul
+Architecture: brcm47xx
+Installed-Size: 8463
+Description:  Luxul's envram tool

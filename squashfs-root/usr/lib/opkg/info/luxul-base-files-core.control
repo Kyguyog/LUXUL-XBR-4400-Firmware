@@ -1,0 +1,9 @@
+Package: luxul-base-files-core
+Version: 1--17d3b877631f5d1f0816c4e5fb55042b
+Depends: libc, base-files
+Source: /workspace/sources/luxul-packages.git/luxul/luxul-base-files
+Section: luxul
+Maintainer: Dan Haab <dhaab@luxul.com>
+Architecture: brcm47xx
+Installed-Size: 10494
+Description:  Luxul base files, scripts and configs

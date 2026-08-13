@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Luxul wan mac address generate
+
+board_id=$(nvram get board_id)
+[ -z "$board_id" ] && exit 1
+
+if [ "$board_id" = "luxul_abr4500_v1" ] ||
+   [ "$board_id" = "luxul_xbr4500_v1" ] ||
+   [ "$board_id" = "luxul_abr4400_v1" ] ||
+   [ "$board_id" = "luxul_xbr4400_v1" ]
+then
+        wanmacaddr=$(nvram get wan_mac)
+        [ -n "$wanmacaddr" ] && exit 0
+        # Generate the appropriate macadddr for WAN
+        et0macaddr=$(nvram get et0macaddr |  tr -d ':')
+        et0macdec=$(printf "%d\n" 0x"$et0macaddr")
+        wanmacaddr=$(expr $et0macdec + 1)
+        wanmacaddr=$(printf "%x\n" $wanmacaddr | sed 's/..\B/&:/g')
+        wan2macaddr=$(expr $et0macdec + 2)
+        wan2macaddr=$(printf "%x\n" $wan2macaddr | sed 's/..\B/&:/g')
+        wan3macaddr=$(expr $et0macdec + 3)
+        wan3macaddr=$(printf "%x\n" $wan3macaddr | sed 's/..\B/&:/g')
+        wan4macaddr=$(expr $et0macdec + 4)
+        wan4macaddr=$(printf "%x\n" $wan4macaddr | sed 's/..\B/&:/g')
+        nvram set wanmacaddr="$wanmacaddr"
+        nvram set wan2macaddr="$wan2macaddr"
+        nvram set wan3macaddr="$wan3macaddr"
+        nvram set wan4macaddr="$wan4macaddr"
+        nvram commit
+
+        wanmacaddr_uci=$(uci -q get network.wan.macaddr)
+        [ -n "$wanmacaddr_uci" ] && exit 0
+        uci set network.wan.macaddr="$wanmacaddr"
+        uci commit network
+fi
+

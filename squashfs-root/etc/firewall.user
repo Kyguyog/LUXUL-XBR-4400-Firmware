@@ -1,0 +1,2 @@
+uci set firewall.miniupnpd.family=IPv4
+uci commit

@@ -1,0 +1,11 @@
+Package: openssh-server
+Version: 6.7p1-3
+Depends: libc, libopenssl, zlib, openssh-keygen
+Source: feeds/packages/net/openssh
+License: BSD ISC
+LicenseFiles: LICENCE
+Section: net
+Maintainer: Peter Wagner <tripolar@gmx.at>
+Architecture: brcm47xx
+Installed-Size: 304128
+Description:  OpenSSH server.

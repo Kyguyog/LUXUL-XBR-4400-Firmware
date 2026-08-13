@@ -1,0 +1,18 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+start() {
+	local enabled
+
+	config_load "luxulctf"
+	config_get_bool enabled basic enabled 0
+
+	[ $enabled -eq 0 ] && return
+
+	echo 1 > /proc/luxulctf/enabled
+}
+
+stop() {
+	echo 0 > /proc/luxulctf/enabled
+}

@@ -1,0 +1,3 @@
+/etc/modules-boot.d/18-ptp
+/lib/modules/3.10.49/ptp.ko
+/etc/modules.d/18-ptp
