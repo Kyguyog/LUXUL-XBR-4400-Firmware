@@ -10,8 +10,9 @@ filesystem and a fixed kernel blob. The output is a raw TRX image
 | --------------------- | ---------------------------------------------------------- |
 | `squashfs-root/`      | Uncompressed root filesystem — this is what you edit       |
 | `kernel.bin`          | TRX header + kernel sections (immutable, do not edit)      |
-| `build.py`            | Compiles the image: squashfs -> TRX -> `firmware.bin`      |
-| `firmware.bin`        | Generated raw TRX image (not committed)                    |
+| `build.py`            | Compiles the image: squashfs -> TRX -> `firmware.bin`       |
+| `tools/build.sh`      | Local build wrapper (checkdeps + build); all artifacts incl. `firmware.bin` into `build/` |
+| `build/`              | Build artifacts: `rootfs.squashfs`, `firmware.bin` (not committed) |
 | `mtimes.tsv`          | Committed inode-mtime manifest used for reproducible builds |
 | `CFE.py`              | Helper script to break into the CFE serial console         |
 
@@ -32,8 +33,14 @@ Requires Python 3 and `squashfs-tools` (`mksquashfs`):
 
 ```sh
 sudo apt install squashfs-tools python3   # Debian/Ubuntu
-python3 build.py
+./tools/build.sh
 ```
+
+All build artifacts, including `firmware.bin`, are written into `build/`. The
+script is the local equivalent of the GitHub workflow: it checks for
+`squashfs-tools`, installs them with `./tools/build.sh --install` if missing,
+then runs `build.py` and moves the finished image into `build/`. (`build.py`
+itself still writes to the repo root so the CI workflow is unaffected.)
 
 The build is deterministic: `build.py` restores inode mtimes from the committed
 `mtimes.tsv` manifest and pins the squashfs superblock time, so the same tree
@@ -68,7 +75,7 @@ HDR0 | length | raw_crc32 | flag_version | off1 | off2 | off3 | data
 scp the image to the router, then run `sysupgrade` from its root shell:
 
 ```sh
-scp firmware.bin root@192.168.1.1:/tmp/
+scp build/firmware.bin root@192.168.1.1:/tmp/
 ssh root@192.168.1.1
 sysupgrade -n /tmp/firmware.bin
 ```
@@ -103,13 +110,13 @@ produces an image byte-identical to a known-good flash.
 Verify a rebuild matches the known-good image:
 
 ```sh
-python3 build.py
-md5sum firmware.bin   # expect 877bda9cb3cd5461e58d08125730601f
+./tools/build.sh
+md5sum build/firmware.bin   # expect 877bda9cb3cd5461e58d08125730601f
 ```
 
 ## CI
 
-`.github/workflows/build.yml` compiles `firmware.bin` automatically whenever
+`.github/workflows/build.yml` compiles `build/firmware.bin` automatically whenever
 files under `squashfs-root/`, `kernel.bin`, or the build script change, and
 uploads the artifact. Tagging a release (e.g. `v1.0`) attaches `firmware.bin`
 to the GitHub release.
